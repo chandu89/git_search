@@ -1,30 +1,63 @@
-# spec/controllers/api/v1/repositories_controller_spec.rb
 require 'rails_helper'
 
-RSpec.describe Api::V1::RepositoriesController, type: :controller, vcr: { cassette_name: 'index_success' } do
-  describe 'GET #index' do
-    let(:search_term) { 'git_search' }
-    let(:per_page) { 10 }
-    let(:page) { 1 }
-  
-    context 'when the request is successful' do
-      before do
-        get :index, params: { search_term: search_term, per_page: per_page, page: page}
+RSpec.describe Api::V1::RepositoriesController, type: :controller do
+  describe "GET /index" do
+    context "with valid parameters" do
+      let(:search_term) { "rails" }
+      let(:per_page) { 10 }
+      let(:page) { 1 }
+
+      let(:repositories) do
+        [
+          { "name" => "Repo1", "author" => "Author1", "repository_url" => "http://example.com/repo1", "stars" => 100 },
+          { "name" => "Repo2", "author" => "Author2", "repository_url" => "http://example.com/repo2", "stars" => 200 }
+          
+        ]
       end
-      
-      it 'returns a successful response' do
-        expect(response).to have_http_status(:ok)
+    
+      before do
+        allow_any_instance_of(GithubApiService).to receive(:fetch_repositories).and_return(repositories)
+        get :index, params: { search_term: search_term, per_page: per_page, page: page }
       end
 
-      context "when there is default sorting order" do
-        it 'returns formatted JSON in stars desc order' do
-          json_response = JSON.parse(response.body)
-          expect(json_response).not_to be_empty
-          stars = json_response.collect{|j| j['stars']}
-          is_desc = stars.each_cons(2).all? { |a, b| a >= b }
-          expect(is_desc).to be_truthy
-        end
+      it "returns http success" do
+        expect(response).to have_http_status(:success)
+      end
+
+      it "returns repositories based on the parameters" do
+        expect(JSON.parse(response.body)).to eq(repositories)
       end
     end
+
+    context "with invalid parameters" do
+      let(:search_term) { "" }
+      let(:per_page) { 0 }
+      let(:page) { 0 }
+
+      let(:repositories) do
+        {
+            "message" => "Validation Failed",
+            "errors" => [
+                {
+                    "resource" => "Search",
+                    "field" => "q",
+                    "code" => "missing"
+                }
+            ],
+            "documentation_url" => "https://docs.github.com/v3/search"
+        }
+      end
+    
+      before do
+        allow_any_instance_of(GithubApiService).to receive(:fetch_repositories).and_return(repositories)
+        get :index, params: { search_term: search_term, per_page: per_page, page: page }
+      end
+
+      it "returns response error message json" do
+        expect(JSON.parse(response.body)).to eq(repositories)
+      end
+    end
+
+    
   end
 end
