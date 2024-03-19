@@ -4,8 +4,9 @@ class Api::V1::RepositoriesController < ApplicationController
     sort_by = params[:sort_by].presence || 'stars' # default sort by stars
     per_page = params[:per_page].presence || 10
     page = params[:page].presence || 1
-    
-    response = HTTParty.get("#{GIT_REPO_URL}?q=#{search_term}&sort=#{sort_by}&order=asc&per_page=#{per_page}&page=#{page}")
+    order = params[:order].presence || "desc"
+
+    response = HTTParty.get("#{GIT_REPO_URL}?q=#{search_term}&sort=#{sort_by}&order=#{order}&per_page=#{per_page}&page=#{page}")
     if response.success?
       render json: format_response(response), status: :ok
     else
