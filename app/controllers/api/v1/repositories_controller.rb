@@ -5,7 +5,7 @@ class Api::V1::RepositoriesController < ApplicationController
     per_page = params[:per_page].presence || 10
     page = params[:page].presence || 1
     
-    response = HTTParty.get("#{GIT_REPO_URL}?q=#{search_term}&sort=#{sort_by}&per_page=#{per_page}&page=#{page}")
+    response = HTTParty.get("#{GIT_REPO_URL}?q=#{search_term}&sort=#{sort_by}&order=asc&per_page=#{per_page}&page=#{page}")
     if response.success?
       render json: format_response(response), status: :ok
     else
