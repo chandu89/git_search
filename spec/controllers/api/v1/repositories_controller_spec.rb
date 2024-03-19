@@ -59,5 +59,25 @@ RSpec.describe Api::V1::RepositoriesController, type: :controller do
         expect(JSON.parse(response.body)).to eq(repositories)
       end
     end
+
+
+    context "when valid parameters and expecting actual result" do
+      let(:search_term) { "rails" }
+      let(:per_page) { 10 }
+      let(:page) { 1 }
+    
+      before do
+        get :index, params: { search_term: search_term, per_page: per_page, page: page }
+      end
+
+      it "returns http success" do
+        expect(response).to have_http_status(:success)
+      end
+
+      it "returns repositories based on the parameters" do
+        expect(JSON.parse(response.body)).not_to be_empty
+      end
+    end
+
   end
 end
