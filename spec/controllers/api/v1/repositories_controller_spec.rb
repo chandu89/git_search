@@ -1,8 +1,9 @@
 require 'rails_helper'
+require 'benchmark'
 
 RSpec.describe Api::V1::RepositoriesController, type: :controller do
   describe "GET /index" do
-    context "with valid parameters" do
+    context "when valid parameters" do
       let(:search_term) { "rails" }
       let(:per_page) { 10 }
       let(:page) { 1 }
@@ -29,7 +30,7 @@ RSpec.describe Api::V1::RepositoriesController, type: :controller do
       end
     end
 
-    context "with invalid parameters" do
+    context "when invalid parameters" do
       let(:search_term) { "" }
       let(:per_page) { 0 }
       let(:page) { 0 }
@@ -49,7 +50,8 @@ RSpec.describe Api::V1::RepositoriesController, type: :controller do
       end
     
       before do
-        allow_any_instance_of(GithubApiService).to receive(:fetch_repositories).and_return(repositories)
+        # disabling it for actual error message
+        # allow_any_instance_of(GithubApiService).to receive(:fetch_repositories).and_return(repositories)
         get :index, params: { search_term: search_term, per_page: per_page, page: page }
       end
 
@@ -57,7 +59,5 @@ RSpec.describe Api::V1::RepositoriesController, type: :controller do
         expect(JSON.parse(response.body)).to eq(repositories)
       end
     end
-
-    
   end
 end
